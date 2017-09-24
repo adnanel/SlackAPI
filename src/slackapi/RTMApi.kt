@@ -41,7 +41,6 @@ class RTMApi private constructor(uri: URI) {
                     private var receivedFirstMessage = false
                     override fun onTextMessage(websocket: WebSocket, message: String) {
                         val json = JSONObject(message)
-                        log(message)
                         if ( json.getString("type").equals("message") ) {
                             //Slack auto sends the last message sent as the first message here, so we ignore that
                             if ( !receivedFirstMessage ) {
@@ -50,7 +49,6 @@ class RTMApi private constructor(uri: URI) {
                             }
                             val msg = json.getString("text")
                             val matched = messageListeners.count { it.ProcessMessage(msg) }
-                            log("Message \"$msg\" matched for $matched listeners.")
                         }
                     }
 
@@ -59,7 +57,7 @@ class RTMApi private constructor(uri: URI) {
     }
 
 
-    fun AddMessageListener(listener : MessageListener) {
+    public fun AddMessageListener(listener : MessageListener) {
         messageListeners += listener
     }
 }
