@@ -1,0 +1,5 @@
+package slackapi
+
+class IMApi {
+
+}
