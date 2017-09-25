@@ -19,4 +19,17 @@ class User(jsonObject: JSONObject) {
     val HasTwoFactorAuth : Boolean = jsonObject.getSafely("has_2fa", false)
     val TwoFactorType : String = jsonObject.getSafely("two_factor_type", "")
 
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+
+        sb.append("User='$Name', IsAdmin=$IsAdmin, IsOwner=$IsOwner, IsPrimaryOwner=$IsPrimaryOwner, Mail=")
+                .append(Profile.EMail).append(", Skype=").append(Profile.Skype).append(", Status=")
+                .append(Profile.StatusText).append(", Ime=").append(Profile.FirstName).append(", Prezime=")
+                .append(Profile.LastName)
+
+        return sb.toString()
+    }
+
+
 }

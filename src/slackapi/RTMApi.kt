@@ -9,6 +9,7 @@ import javax.jws.WebParam
 import java.io.BufferedReader
 import org.omg.CORBA.TIMEOUT
 import slackapi.types.MessageListener
+import slackapi.types.User
 import sun.net.sdp.SdpSupport.createSocket
 import java.io.IOException
 import java.util.*
@@ -41,14 +42,40 @@ class RTMApi private constructor(uri: URI) {
                     private var receivedFirstMessage = false
                     override fun onTextMessage(websocket: WebSocket, message: String) {
                         val json = JSONObject(message)
-                        if ( json.getString("type").equals("message") ) {
-                            //Slack auto sends the last message sent as the first message here, so we ignore that
-                            if ( !receivedFirstMessage ) {
-                                receivedFirstMessage = true
-                                return
+                        val type = json.getString("type")
+
+                        System.out.println("Received event - $json")
+
+                        when ( type ) {
+                            "message" -> {
+                                //Slack auto sends the last message sent as the first message here, so we ignore that
+                                if ( !receivedFirstMessage ) {
+                                    receivedFirstMessage = true
+                                    return
+                                }
+                                val msg = json.getString("text")
+                                val sender = json.getString("user")
+                                val channel = json.getString("channel")
+                                val ts = json.getString("ts")
+
+                                for ( listener in messageListeners ) {
+                                    if ( listener.ProcessMessage(msg, sender, ts, channel) ) break
+                                }
                             }
-                            val msg = json.getString("text")
-                            val matched = messageListeners.count { it.ProcessMessage(msg) }
+                            "user_change" -> {
+                                System.out.println("user_change event firing on " + messageListeners.size + " listeners")
+                                val usr = User(json.getJSONObject("user"))
+                                for ( listener in messageListeners ) {
+                                    System.out.println(listener.toString())
+                                    listener.NotifyUserUpdate(usr)
+                                }
+                            }
+                            "team_join" -> {
+                                val usr = User(json.getJSONObject("user"))
+                                for ( listener in messageListeners ) {
+                                    listener.NotifyUserJoined(usr)
+                                }
+                            }
                         }
                     }
 
